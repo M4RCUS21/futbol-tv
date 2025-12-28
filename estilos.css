@@ -1,0 +1,222 @@
+:root {
+    /* Paleta estilo DAZN / Broadcasting */
+    --bg-black: #000000;       /* Fondo principal negro puro */
+    --bg-dark-gray: #191919;   /* Fondo de módulos/tarjetas */
+    --bg-hover: #2d2d2d;       /* Gris más claro al pasar el ratón */
+    --text-white: #ffffff;
+    --text-gray: #b3b3b3;
+    --accent-color: #f0f0f0;   /* Blanco puro para acentos (o puedes poner amarillo/negrita) */
+}
+
+body {
+    font-family: 'Roboto Condensed', 'Arial Narrow', sans-serif; /* Tipografía más "deportiva" */
+    background-color: var(--bg-black);
+    color: var(--text-white);
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+/* --- HEADER ESTILO TV --- */
+header {
+    background-color: var(--bg-black);
+    border-bottom: 1px solid #333;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.logo {
+    font-size: 2rem;
+    font-weight: 900; /* Extra negrita */
+    letter-spacing: -1px;
+    text-transform: uppercase;
+    font-style: italic;
+    color: var(--text-white);
+}
+
+.user-menu span {
+    color: var(--text-gray);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    margin-right: 15px;
+}
+
+.btn-logout {
+    background: #333;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    font-weight: bold;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+/* --- CONTENIDO PRINCIPAL --- */
+main {
+    max-width: 1400px; /* Más ancho para que quepan más partidos */
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+h2.section-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    margin-bottom: 25px;
+    border-left: 5px solid var(--text-white); /* Línea blanca a la izquierda */
+    padding-left: 15px;
+    line-height: 1;
+}
+
+/* --- GRID DE PARTIDOS --- */
+#partidos-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.partido-item {
+    background-color: var(--bg-dark-gray);
+    transition: transform 0.2s, background-color 0.2s;
+    cursor: pointer;
+    position: relative;
+    border: 1px solid transparent; /* Para evitar saltos al poner borde */
+}
+
+/* Efecto Hover estilo App TV */
+.partido-item:hover {
+    transform: scale(1.03);
+    background-color: var(--bg-hover);
+    border: 1px solid var(--text-white); /* Borde blanco al seleccionar */
+    z-index: 10;
+}
+
+/* Thumbnail simulada (espacio para la imagen) */
+.thumbnail-placeholder {
+    width: 100%;
+    height: 170px;
+    background: #0f0f0f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #444;
+    font-weight: bold;
+    font-size: 3rem;
+    position: relative;
+}
+
+/* Etiqueta "EN VIVO" */
+.badge-live {
+    position: absolute;
+    top: 10px; left: 10px;
+    background-color: #ff0000;
+    color: white;
+    font-size: 0.7rem;
+    padding: 3px 6px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.info-container {
+    padding: 15px;
+}
+
+.partido-item h3 {
+    margin: 0 0 5px 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    line-height: 1.2;
+}
+
+.partido-item p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--text-gray);
+}
+
+/* --- REPRODUCTOR (CINE MODE) --- */
+#reproductor-seccion {
+    margin-top: 50px;
+    background: #000;
+    border: 1px solid #333;
+}
+
+.reproductor-header {
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    background-color: #111;
+}
+
+.btn-close {
+    background: none;
+    border: 1px solid #555;
+    color: white;
+    cursor: pointer;
+    padding: 5px 15px;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+/* Asegura que el contenedor ocupe toda la pantalla y centre el contenido */
+#login-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background-color: #000; /* Fondo negro */
+    display: flex;       /* Activa el modo flexible */
+    justify-content: center; /* Centra horizontalmente */
+    align-items: center;     /* Centra verticalmente */
+    z-index: 1000;
+}
+
+/* Diseño de la tarjeta */
+.login-card {
+    background-color: #1a1a1a;
+    padding: 40px;
+    border-radius: 10px;
+    text-align: center;
+    width: 300px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    border: 1px solid #333;
+}
+
+/* Ocultar cosas */
+.hidden {
+    display: none !important;
+}
+.login-card {
+    background: #111;
+    border: 1px solid #333;
+    padding: 40px;
+    width: 300px;
+    text-align: center;
+}
+.login-input {
+    background: #222;
+    border: 1px solid #444;
+    color: white;
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+.btn-primary {
+    background: white;
+    color: black;
+    border: none;
+    width: 100%;
+    padding: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    cursor: pointer;
+}
