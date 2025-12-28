@@ -17,13 +17,13 @@
             <form id="login-form">
                 <input type="email" id="input-email" class="login-input" placeholder="USUARIO (Cualquiera)" required>
                 <input type="password" id="input-password" class="login-input" placeholder="CONTRASEÑA" required>
-                <button type="submit" id="btn-login" class="btn-primary">ENTRAR AL ESTADIO</button>
+                <button type="submit" id="btn-login" class="btn-primary">ENTRAR</button>
             </form>
             <p id="login-error" style="color:red; display:none; margin-top:10px;"></p>
         </div>
     </div>
 
-    <div id="app-content" class="hidden"> 
+    <div id="app-content" class="hidden" style="display:none;"> 
         <header>
             <div class="logo">MY<span style="color:#fff">SPORT</span></div>
             <div class="user-menu">
@@ -36,13 +36,13 @@
             <section id="lista-partidos">
                 <h2 class="section-title">EN DIRECTO AHORA</h2>
                 <div id="partidos-container">
-                    <p style="color:#666; text-align:center;">Cargando señal...</p>
+                    <p style="color:white; text-align:center">Buscando señal...</p>
                 </div>
             </section>
 
-            <section id="reproductor-seccion" class="hidden">
+            <section id="reproductor-seccion" class="hidden" style="display:none;">
                 <div class="reproductor-header">
-                    <h2 id="titulo-partido-actual" style="margin:0; text-transform:uppercase;">TITULO</h2>
+                    <h2 id="titulo-partido-actual" style="margin:0; text-transform:uppercase;">PARTIDO</h2>
                     <button id="cerrar-reproductor" class="btn-close">CERRAR X</button>
                 </div>
                 <div class="video-wrapper">
