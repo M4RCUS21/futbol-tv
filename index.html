@@ -5,21 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SPORT LIVE</title>
     
-    <meta http-equiv="Content-Security-Policy" 
-          content="default-src * 'self' 'unsafe-inline' 'unsafe-eval' data: gap: content: blob:;">
+    <meta http-equiv="Content-Security-Policy" content="default-src * 'self' 'unsafe-inline' 'unsafe-eval' data: gap: content: blob:;">
 
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
-    <link href="https://vjs.zencdn.net/8.12.0/video-js.css" rel="stylesheet">
     <link rel="stylesheet" href="estilos.css">
+    
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js"></script>
 </head>
 <body>
 
     <div id="login-screen"> 
         <div class="login-card">
             <h1>SPORT ID</h1>
-            <p>SISTEMA PRIVADO</p>
+            <p>ACCESO PRIVADO</p>
             <form id="login-form">
-                <input type="email" id="input-email" class="login-input" placeholder="USUARIO" required>
                 <input type="password" id="input-password" class="login-input" placeholder="CONTRASEÑA" required>
                 <button type="submit" id="btn-login" class="btn-primary">ENTRAR</button>
             </form>
@@ -27,36 +26,114 @@
         </div>
     </div>
 
-    <div id="app-content" class="hidden" style="display:none;"> 
+    <div id="app-content" style="display:none;"> 
         <header>
             <div class="logo">MY<span style="color:#fff">SPORT</span></div>
             <div class="user-menu">
-                <span id="user-name">INVITADO</span>
-                <button id="btn-logout" class="btn-logout">SALIR</button>
+                <button onclick="location.reload()" class="btn-logout">SALIR</button>
             </div>
         </header>
 
         <main>
             <section id="lista-partidos">
-                <h2 class="section-title">EN DIRECTO AHORA</h2>
+                <h2 class="section-title">EN DIRECTO</h2>
                 <div id="partidos-container">
-                    <p style="color:#aaa; text-align:center">Cargando señal...</p>
+                    <p style="color:white; text-align:center">Conectando con satélite...</p>
                 </div>
             </section>
 
-            <section id="reproductor-seccion" class="hidden" style="display:none;">
+            <section id="reproductor-seccion" style="display:none; margin-top:20px;">
                 <div class="reproductor-header">
-                    <h2 id="titulo-partido-actual" style="margin:0; text-transform:uppercase;">PARTIDO</h2>
-                    <button id="cerrar-reproductor" class="btn-close">CERRAR X</button>
+                    <h2 id="titulo-partido" style="text-transform:uppercase;">PARTIDO</h2>
+                    <button onclick="cerrarVideo()" class="btn-close">CERRAR</button>
                 </div>
-                <div class="video-wrapper">
-                    <video id="mi-reproductor" class="video-js vjs-default-skin vjs-big-play-centered vjs-fluid" controls preload="auto"></video>
-                </div>
+                <div id="player-wrapper" style="width: 100%; height: 500px; background:black;"></div>
             </section>
         </main>
     </div>
 
-    <script src="https://vjs.zencdn.net/8.12.0/video.min.js"></script>
-    <script src="script.js"></script>
+    <script>
+        // --- CONFIGURACIÓN ---
+        const PASSWORD = "futbol"; 
+        const URL_GITHUB = 'https://raw.githubusercontent.com/M4RCUS21/futbol-tv/main/lista.m3u';
+        var playerInstance = null;
+
+        // LOGIN
+        document.getElementById('login-form').addEventListener('submit', function(e){
+            e.preventDefault();
+            if(document.getElementById('input-password').value === PASSWORD){
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('app-content').style.display = 'block';
+                buscarEnlace();
+            } else {
+                document.getElementById('login-error').style.display = 'block';
+                document.getElementById('login-error').innerText = "Contraseña incorrecta";
+            }
+        });
+
+        // BUSCAR ENLACE
+        function buscarEnlace(){
+            fetch(URL_GITHUB).then(res => res.text()).then(texto => {
+                const lineas = texto.split('\n');
+                let url = "";
+                for(let l of lineas) if(l.trim().startsWith('http')) { url = l.trim(); break; }
+                
+                const container = document.getElementById('partidos-container');
+                container.innerHTML = "";
+
+                if(url) {
+                    crearBoton(url);
+                } else {
+                    container.innerHTML = "<h3>NO HAY SEÑAL</h3>";
+                }
+            });
+        }
+
+        // CREAR BOTÓN
+        function crearBoton(url){
+            const btn = document.createElement('div');
+            btn.className = 'partido-item';
+            btn.style = "background:#222; padding:20px; border-radius:10px; cursor:pointer; border:1px solid #444; text-align:center;";
+            btn.innerHTML = "<h2 style='color:white; margin:0'>📺 VER CANAL EN DIRECTO</h2>";
+            
+            btn.onclick = function(){
+                document.getElementById('reproductor-seccion').style.display = 'block';
+                iniciarClappr(url);
+            };
+            document.getElementById('partidos-container').appendChild(btn);
+        }
+
+        // INICIAR CLAPPR (LA MAGIA)
+        function iniciarClappr(urlOriginal){
+            // Limpiar anterior
+            if(playerInstance) { playerInstance.destroy(); }
+            document.getElementById('player-wrapper').innerHTML = "";
+
+            // Intento 1: Directo (si el servidor es bueno)
+            // Intento 2: Con Proxy (si bloquean CORS)
+            
+            // Usamos un proxy diferente: "allorigins" a veces va mejor para m3u8
+            // Pero primero probamos el truco de Clappr:
+            
+            playerInstance = new Clappr.Player({
+                source: urlOriginal, 
+                parentId: "#player-wrapper",
+                width: '100%',
+                height: '100%',
+                autoPlay: true,
+                hlsjsConfig: {
+                    xhrSetup: function(xhr, url) {
+                        // Esto intenta engañar al servidor diciendo que somos una web normal
+                        xhr.withCredentials = false; 
+                    }
+                }
+            });
+        }
+
+        function cerrarVideo(){
+            if(playerInstance) { playerInstance.stop(); }
+            document.getElementById('reproductor-seccion').style.display = 'none';
+        }
+    </script>
 </body>
 </html>
