@@ -1,121 +1,99 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- CONFIGURACIÓN ---
-    const PASS_MAESTRA = "futbol"; // La contraseña para entrar
-    const URL_GITHUB = 'https://raw.githubusercontent.com/M4RCUS21/futbol-tv/main/lista.m3u';
+    // --- DATOS IMPORTANTES ---
+    const CONTRASEÑA_ACCESO = "futbol"; // Puedes cambiarla
+    // Tu enlace de GitHub donde guardas el m3u8
+    const URL_LISTA = 'https://raw.githubusercontent.com/M4RCUS21/futbol-tv/main/lista.m3u';
 
-    // ELEMENTOS
+    // Elementos del DOM
     const loginScreen = document.getElementById('login-screen');
     const appContent = document.getElementById('app-content');
     const loginForm = document.getElementById('login-form');
-    const loginError = document.getElementById('login-error');
-    const userNameDisplay = document.getElementById('user-name');
-    const btnLogout = document.getElementById('btn-logout');
+    const errorMsg = document.getElementById('login-error');
     
-    // REPRODUCTOR
+    // Reproductor
     var player = videojs('mi-reproductor');
-    const playerSection = document.getElementById('reproductor-seccion');
-    const container = document.getElementById('partidos-container');
+    const sectionPlayer = document.getElementById('reproductor-seccion');
+    const containerPartidos = document.getElementById('partidos-container');
 
-    // 1. LÓGICA DE LOGIN (Sin Firebase, más fácil)
+    // 1. GESTIÓN DEL LOGIN (Sin Firebase)
     loginForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const pass = document.getElementById('input-password').value;
-        const email = document.getElementById('input-email').value;
-
-        if (pass === PASS_MAESTRA) {
-            // Login correcto
+        
+        if(pass === CONTRASEÑA_ACCESO) {
             loginScreen.style.display = 'none';
-            appContent.classList.remove('hidden');
-            userNameDisplay.innerText = email.split('@')[0].toUpperCase();
-            cargarPartidosDesdeGitHub();
+            appContent.style.display = 'block'; // Mostrar la app
+            cargarCanales(); // Cargar la lista
         } else {
-            // Login incorrecto
-            loginError.style.display = 'block';
-            loginError.innerText = "Contraseña incorrecta. Prueba 'futbol'";
+            errorMsg.style.display = 'block';
+            errorMsg.innerText = "Contraseña incorrecta";
         }
     });
 
-    // 2. LOGOUT
-    btnLogout.addEventListener('click', () => {
-        location.reload(); // Recarga la página para volver al login
-    });
+    document.getElementById('btn-logout').addEventListener('click', () => location.reload());
 
-    // 3. CARGAR LISTA DE GITHUB
-    function cargarPartidosDesdeGitHub() {
-        container.innerHTML = '<p style="color:yellow">Buscando señal en GitHub...</p>';
-        
-        fetch(URL_GITHUB)
+    // 2. CARGAR EL ENLACE DESDE GITHUB
+    function cargarCanales() {
+        fetch(URL_LISTA)
             .then(res => res.text())
             .then(texto => {
-                container.innerHTML = ''; // Limpiar mensaje de carga
-                
-                // Buscar enlace http o https
                 const lineas = texto.split('\n');
-                let urlEncontrada = "";
+                let urlM3U8 = "";
                 
-                for(let linea of lineas){
-                    if(linea.trim().startsWith('http')){
-                        urlEncontrada = linea.trim();
+                // Buscamos la primera línea que sea un enlace
+                for(let linea of lineas) {
+                    if(linea.trim().startsWith('http')) {
+                        urlM3U8 = linea.trim();
                         break;
                     }
                 }
 
-                if(urlEncontrada){
-                    crearTarjeta("PARTIDAZO EN VIVO", urlEncontrada);
+                containerPartidos.innerHTML = ""; // Limpiar mensaje de carga
+
+                if(urlM3U8) {
+                    crearBotonPartido("PARTIDAZO EN VIVO", urlM3U8);
                 } else {
-                    container.innerHTML = '<h3 style="color:white">NO HAY SEÑAL ACTIVADA</h3><p style="color:#777">Sube un enlace a lista.m3u en GitHub</p>';
+                    containerPartidos.innerHTML = "<h3 style='color:white'>NO HAY SEÑAL ACTIVADA</h3>";
                 }
             })
-            .catch(err => {
-                container.innerHTML = '<h3 style="color:red">ERROR DE CONEXIÓN</h3>';
-                console.error(err);
-            });
+            .catch(err => console.error("Error cargando lista", err));
     }
 
-    // 4. CREAR TARJETA DE PARTIDO
-    function crearTarjeta(titulo, urlOriginal) {
+    // 3. PINTAR EL BOTÓN Y PONER EL VÍDEO CON PROXY
+    function crearBotonPartido(titulo, urlOriginal) {
         const div = document.createElement('div');
         div.className = 'partido-item'; // Usa tus estilos.css
-        // Si no tienes estilo para .partido-item, añadimos uno básico inline
-        div.style.background = "#1f1f1f";
+        // Estilo rápido por si acaso
+        div.style.background = "#222";
         div.style.padding = "20px";
-        div.style.margin = "10px 0";
         div.style.borderRadius = "8px";
         div.style.cursor = "pointer";
-        div.style.border = "1px solid #333";
-
-        div.innerHTML = `
-            <div style="background:red; color:white; padding:4px 8px; font-weight:bold; display:inline-block; border-radius:4px; font-size:0.8rem;">LIVE</div>
-            <h3 style="margin:10px 0; color:white;">${titulo}</h3>
-            <p style="color:#aaa; font-size:0.9rem;">Pulsa para conectar</p>
-        `;
+        div.style.border = "1px solid #444";
+        div.innerHTML = `<h3 style="color:white; margin:0">📺 ${titulo} <span style="color:red; font-size:0.8em">LIVE</span></h3>`;
 
         div.addEventListener('click', () => {
-            playerSection.classList.remove('hidden');
-            document.getElementById('titulo-partido-actual').innerText = titulo;
-
-            // USAMOS EL PROXY PARA EVITAR EL BLOQUEO
+            sectionPlayer.style.display = 'block';
+            
+            // --- EL TRUCO DEL PROXY PARA SALTAR EL ERROR 403 ---
+            // Usamos corsproxy.io para que haga de intermediario
             const urlConProxy = "https://corsproxy.io/?" + encodeURIComponent(urlOriginal);
             
-            console.log("Cargando:", urlConProxy);
-            
+            console.log("Intentando cargar con proxy:", urlConProxy);
+
             player.src({
                 src: urlConProxy,
                 type: 'application/x-mpegURL'
             });
             player.play();
-            
-            playerSection.scrollIntoView({behavior: 'smooth'});
         });
 
-        container.appendChild(div);
+        containerPartidos.appendChild(div);
     }
 
-    // 5. CERRAR REPRODUCTOR
+    // Cerrar video
     document.getElementById('cerrar-reproductor').addEventListener('click', () => {
         player.pause();
-        playerSection.classList.add('hidden');
+        sectionPlayer.style.display = 'none';
     });
-
 });
