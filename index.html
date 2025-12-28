@@ -5,21 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SPORT LIVE</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="estilos.css">
     <link href="https://vjs.zencdn.net/8.12.0/video-js.css" rel="stylesheet">
+    <link rel="stylesheet" href="estilos.css">
 </head>
 <body>
 
     <div id="login-screen"> 
         <div class="login-card">
             <h1>SPORT ID</h1>
-            <p>INGRESA TUS DATOS</p>
+            <p>SISTEMA PRIVADO</p>
             <form id="login-form">
-                <input type="email" id="input-email" class="login-input" placeholder="EMAIL" required>
+                <input type="email" id="input-email" class="login-input" placeholder="USUARIO (Cualquiera)" required>
                 <input type="password" id="input-password" class="login-input" placeholder="CONTRASEÑA" required>
-                <button type="submit" id="btn-login" class="btn-primary">ENTRAR</button>
+                <button type="submit" id="btn-login" class="btn-primary">ENTRAR AL ESTADIO</button>
             </form>
-            <p id="login-error" style="color:red; display:none;"></p>
+            <p id="login-error" style="color:red; display:none; margin-top:10px;"></p>
         </div>
     </div>
 
@@ -27,16 +27,17 @@
         <header>
             <div class="logo">MY<span style="color:#fff">SPORT</span></div>
             <div class="user-menu">
-                <span id="user-name">USUARIO</span>
+                <span id="user-name">INVITADO</span>
                 <button id="btn-logout" class="btn-logout">SALIR</button>
             </div>
         </header>
 
         <main>
             <section id="lista-partidos">
-                <h2 class="section-title">AHORA EN DIRECTO</h2>
+                <h2 class="section-title">EN DIRECTO AHORA</h2>
                 <div id="partidos-container">
-                    </div>
+                    <p style="color:#666; text-align:center;">Cargando señal...</p>
+                </div>
             </section>
 
             <section id="reproductor-seccion" class="hidden">
@@ -51,20 +52,7 @@
         </main>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
     <script src="https://vjs.zencdn.net/8.12.0/video.min.js"></script>
     <script src="script.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
-    
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
-    
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
-
-    <script src="https://vjs.zencdn.net/8.12.0/video.min.js"></script>
-    
-    <script src="script.js"></script>
-</body>
-</html>
 </body>
 </html>

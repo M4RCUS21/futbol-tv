@@ -1,74 +1,121 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // 1. SALTARNOS EL LOGIN (Tus colegas entran directo)
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('app-content').classList.remove('hidden');
+    // --- CONFIGURACIÓN ---
+    const PASS_MAESTRA = "futbol"; // La contraseña para entrar
+    const URL_GITHUB = 'https://raw.githubusercontent.com/M4RCUS21/futbol-tv/main/lista.m3u';
 
-    // 2. CONECTAR CON TU ARCHIVO DE GITHUB
-    // Asegúrate de que este es tu usuario y repo correcto
-    const URL_LISTA = 'https://raw.githubusercontent.com/M4RCUS21/futbol-tv/main/lista.m3u';
+    // ELEMENTOS
+    const loginScreen = document.getElementById('login-screen');
+    const appContent = document.getElementById('app-content');
+    const loginForm = document.getElementById('login-form');
+    const loginError = document.getElementById('login-error');
+    const userNameDisplay = document.getElementById('user-name');
+    const btnLogout = document.getElementById('btn-logout');
     
-    const container = document.getElementById('partidos-container');
-    const playerSection = document.getElementById('reproductor-seccion');
-    const titleDisplay = document.getElementById('titulo-partido-actual');
-    
-    // Iniciamos el reproductor
+    // REPRODUCTOR
     var player = videojs('mi-reproductor');
+    const playerSection = document.getElementById('reproductor-seccion');
+    const container = document.getElementById('partidos-container');
 
-    // 3. LEER EL ENLACE QUE PEGASTE
-    fetch(URL_LISTA)
-        .then(response => response.text())
-        .then(texto => {
-            // Buscamos la línea que empieza por http (el enlace m3u8)
-            const lineas = texto.split('\n');
-            let enlaceEncontrado = "";
-            
-            for (let linea of lineas) {
-                if (linea.startsWith('http')) {
-                    enlaceEncontrado = linea.trim();
-                    break;
+    // 1. LÓGICA DE LOGIN (Sin Firebase, más fácil)
+    loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const pass = document.getElementById('input-password').value;
+        const email = document.getElementById('input-email').value;
+
+        if (pass === PASS_MAESTRA) {
+            // Login correcto
+            loginScreen.style.display = 'none';
+            appContent.classList.remove('hidden');
+            userNameDisplay.innerText = email.split('@')[0].toUpperCase();
+            cargarPartidosDesdeGitHub();
+        } else {
+            // Login incorrecto
+            loginError.style.display = 'block';
+            loginError.innerText = "Contraseña incorrecta. Prueba 'futbol'";
+        }
+    });
+
+    // 2. LOGOUT
+    btnLogout.addEventListener('click', () => {
+        location.reload(); // Recarga la página para volver al login
+    });
+
+    // 3. CARGAR LISTA DE GITHUB
+    function cargarPartidosDesdeGitHub() {
+        container.innerHTML = '<p style="color:yellow">Buscando señal en GitHub...</p>';
+        
+        fetch(URL_GITHUB)
+            .then(res => res.text())
+            .then(texto => {
+                container.innerHTML = ''; // Limpiar mensaje de carga
+                
+                // Buscar enlace http o https
+                const lineas = texto.split('\n');
+                let urlEncontrada = "";
+                
+                for(let linea of lineas){
+                    if(linea.trim().startsWith('http')){
+                        urlEncontrada = linea.trim();
+                        break;
+                    }
                 }
-            }
 
-            if (enlaceEncontrado) {
-                crearTarjetaPartido("PARTIDAZO EN DIRECTO", enlaceEncontrado);
-            } else {
-                container.innerHTML = "<h3 style='color:white'>NO HAY PARTIDO AHORA MISMO</h3>";
-            }
-        })
-        .catch(error => {
-            console.error("Error cargando lista:", error);
-            container.innerHTML = "<h3 style='color:red'>ERROR CARGANDO CANAL</h3>";
-        });
+                if(urlEncontrada){
+                    crearTarjeta("PARTIDAZO EN VIVO", urlEncontrada);
+                } else {
+                    container.innerHTML = '<h3 style="color:white">NO HAY SEÑAL ACTIVADA</h3><p style="color:#777">Sube un enlace a lista.m3u en GitHub</p>';
+                }
+            })
+            .catch(err => {
+                container.innerHTML = '<h3 style="color:red">ERROR DE CONEXIÓN</h3>';
+                console.error(err);
+            });
+    }
 
-    // Función para pintar el botón del partido
-    function crearTarjetaPartido(titulo, url) {
+    // 4. CREAR TARJETA DE PARTIDO
+    function crearTarjeta(titulo, urlOriginal) {
         const div = document.createElement('div');
-        div.className = 'partido-item';
+        div.className = 'partido-item'; // Usa tus estilos.css
+        // Si no tienes estilo para .partido-item, añadimos uno básico inline
+        div.style.background = "#1f1f1f";
+        div.style.padding = "20px";
+        div.style.margin = "10px 0";
+        div.style.borderRadius = "8px";
+        div.style.cursor = "pointer";
+        div.style.border = "1px solid #333";
+
         div.innerHTML = `
-            <div style="background:red; color:white; padding:5px; font-weight:bold; display:inline-block; margin-bottom:5px; border-radius:3px; font-size: 0.8rem;">EN VIVO</div>
-            <h3 style="margin: 10px 0;">${titulo}</h3>
-            <p style="color:#aaa; font-size: 0.9rem;">Pulsa para ver</p>
+            <div style="background:red; color:white; padding:4px 8px; font-weight:bold; display:inline-block; border-radius:4px; font-size:0.8rem;">LIVE</div>
+            <h3 style="margin:10px 0; color:white;">${titulo}</h3>
+            <p style="color:#aaa; font-size:0.9rem;">Pulsa para conectar</p>
         `;
 
-        // Al hacer click, ponemos el vídeo
         div.addEventListener('click', () => {
             playerSection.classList.remove('hidden');
-            titleDisplay.textContent = titulo;
+            document.getElementById('titulo-partido-actual').innerText = titulo;
+
+            // USAMOS EL PROXY PARA EVITAR EL BLOQUEO
+            const urlConProxy = "https://corsproxy.io/?" + encodeURIComponent(urlOriginal);
+            
+            console.log("Cargando:", urlConProxy);
+            
             player.src({
-                src: url,
+                src: urlConProxy,
                 type: 'application/x-mpegURL'
             });
             player.play();
-            playerSection.scrollIntoView({ behavior: 'smooth' });
+            
+            playerSection.scrollIntoView({behavior: 'smooth'});
         });
 
         container.appendChild(div);
     }
 
-    // Botón cerrar
+    // 5. CERRAR REPRODUCTOR
     document.getElementById('cerrar-reproductor').addEventListener('click', () => {
         player.pause();
         playerSection.classList.add('hidden');
     });
+
 });
